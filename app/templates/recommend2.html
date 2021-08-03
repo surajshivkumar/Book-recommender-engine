@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <!-- 🔍 Search for Another Book -->
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Recommendation</title>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/3.6.0/mdb.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="../static/recommend.css">
+</head>
+
+<body>
+  <!-- NAVBAR -->
+  <div class="d-flex justify-content-center">
+    <button class="search-btn btn btn-lg mt-5" onclick="location.href='/'">
+      🔍 Search for Another Book
+    </button>
+  </div>
+
+
+  <!-- MAIN SECTION -->
+  <div id="divContainer" class="container d-flex flex-column align-items-center mt-5">
+
+    <!-- SELCTED CARD -->
+    <div class="selected-card d-flex justify-content-around">
+      <div class="selected-img">
+        <img src="{{query_book.img}}" alt="" width="180" height="230">
+      </div>
+      <div class="selected-text d-flex flex-column justify-content-between ms-3">
+        <h3>{{query_book.title}}</h3>
+        <p><span class="fw-500">Author</span>: {{query_book.author}}</p>
+        <p><span class="fw-500">Year</span>: {{query_book.year}}</p>
+      </div>
+    </div>
+    <p class="recommend-text mt-3 mb-3">{{query_book.title}},<br> here are some books like this:</p>
+
+    <!-- RECOMMENDED MOVIES POPULATION USING JS -->
+    <div id="card-section" class="mb-5"></div>
+  </div>
+
+  <!-- BOOTSTRAP CDN -->
+  <script type=" text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/3.6.0/mdb.min.js"></script>
+  <script>
+
+    // VARIABLES 
+    let movies = {{res|tojson}}
+    const starTotal = 5;
+    let card;
+    let loadMoreBtn = document.createElement("div");
+
+    // FUNCTION CALLS
+    for (let [idx, movie] of movies.entries()) {
+      addMovieToDOM(idx, movie);
+    }
+    addBtnToDOM(movies.length);
+
+    // FUNCTION DEFINITIONS 
+    function addMovieToDOM(idx, movie) {
+
+      // Defining Variables and Creating DOM Elements
+      const starPercentage = (movie.rating / starTotal) * 100;
+      const starPercentageRounded = `${(Math.round(starPercentage / 10) * 10)}%`;
+      card = document.createElement("div");
+      let imageSection = document.createElement("div");
+
+      // Adding Classes To Elements
+      card.className = "d-flex flex-initial m-2";
+      if (idx >= 5) {
+        card.classList.add("display-none");
+      }
+
+      // Inserting the Elements into the DOM
+      card.insertAdjacentHTML('beforeend', `<div class="image-section"><img src="${movie.img}" width="100" height="170"></div>`)
+      card.insertAdjacentHTML('beforeend', `
+        <div class="text-section d-flex flex-column justify-content-around p-2">
+          <p class="book-title">${movie.title}</p>
+          <p class="book-author"><span class="fw-500">Author</span>: ${movie.author}</p>
+          <div class="d-flex justify-content-between">
+            <p class="book-published"><span class="fw-500">Year</span>: ${movie.year}</p>
+            <div class="rating stars-outer" data-mdb-toggle="tooltip" title=${movie.rating}>
+              <div class="stars-inner" style="width:${starPercentageRounded}"></div>
+            </div>
+          </div>
+        </div>`)
+      document.getElementById('card-section').appendChild(card);
+    }
+
+    function addBtnToDOM(len) {
+      // Show Load More button if there's more than 5 books
+      if (len >= 5) {
+        // Create button element
+        loadMoreBtn.innerHTML = '<button class="btn btn-dark btn-lg btn-rounded">Load More</button>';
+
+        // Add CSS to button
+        loadMoreBtn.className = "d-flex justify-content-center mb-5"
+
+        // Insert button into the DOM
+        document.body.appendChild(loadMoreBtn);
+      }
+    }
+
+    // On Clicking Load More Button, show the remaining Movies
+    function loadMoreMovies() {
+      let cardSection = document.getElementById('card-section');
+
+      // Unhide Hidden Movies
+      for (let i = 0; i < cardSection.children.length; i++) {
+        if (i >= 5) {
+          cardSection.children[i].classList.toggle("display-none");
+        }
+      }
+
+      // Hide Load More Button
+      loadMoreBtn.classList.toggle('display-none')
+    }
+
+    // EVENT LISTENERS
+    document.querySelector("button").addEventListener('click', loadMoreMovies);
+  </script>
+</body>
+
+</html>
